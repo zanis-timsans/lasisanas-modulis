@@ -1,0 +1,565 @@
+<html>
+
+<head>
+    <meta name="resource-type" content="document">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">-->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.4.1.min.js"></script>
+    <script type="text/javascript">
+        var IsIPhone = false;
+
+        if ('standalone' in navigator && !navigator.standalone && (/iphone|ipod|ipad/gi).test(navigator.platform) && (
+                /Safari/i).test(navigator.appVersion)) {
+            IsIPhone = (/iphone/gi).test(navigator.platform);
+        }
+
+        if (IsIPhone) {
+            //document.write('<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">');
+        } else {
+            document.write(
+                '<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">'
+            );
+        }
+    </script>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', '']);
+        _gaq.push(['_setDomainName', 'ipadstopwatch.com']);
+        // _gaq.push(['_setAllowLinker', true]);
+        // _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script');
+            ga.type = 'text/javascript';
+            ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') +
+                '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+    <!-- <script type="text/javascript" src="Scripts/jquery.cookie.js"></script> -->
+
+    <!-- Adjust Size -->
+    <script type="text/javascript">
+        function AdjustSize() {
+            var Source = $('table');
+            var Target = $('body');
+
+            AdjustFontSizeToFit(Source, Target, 5);
+        }
+
+        function AdjustFontSizeToFit(Source, Target, Padding) {
+            Source.hide();
+
+            var FontSize = 28; // initial font size
+
+            var ChangeBy = 30; // initial change by 30
+            var MinChangeBy = 8;
+
+            var TargetWidth = Target.width() - Padding;
+            var TargetHeight = Target.height() - Padding;
+
+            while (true) {
+                Source.css('fontSize', FontSize);
+
+                if (Source.width() > TargetWidth || Source.height() > TargetHeight) {
+                    FontSize -= ChangeBy;
+
+                    if (ChangeBy <= MinChangeBy) {
+                        Source.css('fontSize', FontSize);
+                        break;
+                    }
+
+                    ChangeBy /= 2;
+
+                    if (ChangeBy < MinChangeBy) {
+                        ChangeBy = MinChangeBy;
+                    }
+                }
+
+                FontSize += ChangeBy;
+            }
+
+            Source.show();
+        }
+
+        function GetWidthAndHeightString() { // for window size tracking
+            var oWindow = $(window);
+
+            function Round(pNumber) {
+                return Math.round(pNumber / 10) * 10;
+            }
+            var WidthAndHeight = Round(oWindow.width()) + "x" + Round(oWindow.height());
+            return WidthAndHeight;
+        }
+
+        var g_FinalWindowSizeId;
+
+        function FinalWindowSize() { // called when window done resizing
+            AdjustSize();
+            _gaq.push(['_trackEvent', 'Embeded Stopwatch', 'Resized', GetWidthAndHeightString(), undefined, true]);
+        }
+
+        $(window).resize(function () {
+            if (g_FinalWindowSizeId != undefined) {
+                clearTimeout(g_FinalWindowSizeId);
+            }
+
+            g_FinalWindowSizeId = setTimeout(FinalWindowSize, 200);
+        });
+
+        $(function () {
+            setTimeout(AdjustSize, 250);
+            _gaq.push(['_trackEvent', 'Embeded Stopwatch', 'Initial Size', GetWidthAndHeightString(), undefined,
+                true
+            ]);
+        });
+    </script>
+
+    <!-- DisplayTime() -->
+    <script language="javascript">
+        var g_Hours;
+        var g_Minutes;
+        var g_Seconds;
+
+        function MillisToTime(ElapsedMilliseconds) {
+            var Milliseconds = ElapsedMilliseconds % 1000;
+            var TotalSeconds = (ElapsedMilliseconds - Milliseconds) / 1000;
+            var Seconds = TotalSeconds % 60;
+            var TotalMinutes = (TotalSeconds - Seconds) / 60;
+            var Minutes = TotalMinutes % 60;
+            var Hours = (TotalMinutes - Minutes) / 60;
+            return {
+                Hours: Hours,
+                Minutes: Minutes,
+                Seconds: Seconds,
+                Milliseconds: Milliseconds,
+                TotalSeconds: TotalSeconds
+            };
+        }
+
+        function DisplayTime(ElapsedMilliseconds) {
+            var Time = MillisToTime(ElapsedMilliseconds);
+
+            var Milliseconds = Time.Milliseconds;
+            var Seconds = Time.Seconds;
+            var Minutes = Time.Minutes;
+            var Hours = Time.Hours;
+
+            var bHoursChanged = false;
+            if (g_Hours != Hours) {
+                bHoursChanged = true;
+                g_Hours = Hours;
+                $('#Hours').html(AddZeroPadding(Hours));
+            }
+
+            var bMinutesChanged = false;
+            if (g_Minutes != Minutes) {
+                bMinutesChanged = true;
+                g_Minutes = Minutes;
+                $('#Minutes').html(AddZeroPadding(Minutes));
+            }
+
+            var bSecondsChanged = false;
+            if (g_Seconds != Seconds) {
+                bSecondsChanged = true;
+                g_Seconds = Seconds;
+                $('#Seconds').html(AddZeroPadding(Seconds));
+            }
+
+            $('#Milliseconds').html(AddZeroPadding3(Milliseconds));
+
+            if (Hours == 0) {
+                if (bHoursChanged) {
+                    $('#Hours').addClass("TimeZero");
+                }
+
+                if (Minutes == 0) {
+                    if (bMinutesChanged) {
+                        $('#Minutes').addClass("TimeZero");
+                    }
+
+                    if (bSecondsChanged) {
+                        if (Seconds == 0) {
+                            $('#Seconds').addClass("TimeZero");
+                        } else {
+                            $('#Seconds').removeClass("TimeZero");
+                        }
+                    }
+                } else {
+                    if (bMinutesChanged) {
+                        $('#Minutes').removeClass("TimeZero");
+                    }
+                    if (bSecondsChanged) {
+                        $('#Seconds').removeClass("TimeZero");
+                    }
+                }
+            } else {
+                if (bHoursChanged) {
+                    $('#Hours').removeClass("TimeZero");
+                }
+
+                if (bMinutesChanged) {
+                    $('#Minutes').removeClass("TimeZero");
+                }
+
+                if (bSecondsChanged) {
+                    $('#Seconds').removeClass("TimeZero");
+                }
+            }
+        }
+
+        function AddZeroPadding(pNumber) {
+            if (pNumber < 10) return "0" + pNumber;
+            return pNumber;
+        }
+
+        function AddZeroPadding3(pNumber) {
+            if (pNumber < 10) return "00" + pNumber;
+            if (pNumber < 100) return "0" + pNumber;
+            return pNumber;
+        }
+    </script>
+
+    <!-- Load/Save to cookie -->
+    <script language="javascript">
+        function LoadStateFromCookie() {
+            // if ($.cookie("StartTime") != null) g_StartTime = parseInt($.cookie("StartTime"));
+            // if ($.cookie("Offset") != null) g_LeftOf = parseInt($.cookie("Offset"));
+            // if ($.cookie("Running") != null) g_Running = $.cookie("Running") == "true";
+        }
+
+        function SaveStateToCookie() {
+            // var CONST_CookieNeverExpiresValue = 30 * 12 * 5; // 5 years from now
+            // var CONST_CookieNeverExpires = { expires: CONST_CookieNeverExpiresValue };
+
+            // $.cookie("StartTime", g_StartTime, CONST_CookieNeverExpires);
+            // $.cookie("Offset", g_LeftOf, CONST_CookieNeverExpires);
+            // $.cookie("Running", g_Running, CONST_CookieNeverExpires);
+        }
+    </script>
+
+    <!-- Step(), UpdateTimeDisplay(), CalculateElapsedMilliseconds() -->
+    <script language="javascript">
+        var g_LeftOf = 0; // these values are store and loaded from the cookie
+        var g_StartTime;
+        var g_Running = false;
+        var dialog;
+
+        function CalculateElapsedMilliseconds() { // this is the time that gets displayed
+            if (!g_Running) return g_LeftOf;
+
+            var CurrentTime = new Date().getTime();
+            var ElapsedTime = CurrentTime - g_StartTime;
+            return ElapsedTime + g_LeftOf;
+        }
+
+        //Pārveido sekundēs
+        // function kkas() {
+        window.kkas = function () {
+            let sekundes = CalculateElapsedMilliseconds() / 1000;
+            return Math.floor(sekundes);
+        };
+
+        function UpdateTimeDisplay() {
+            DisplayTime(CalculateElapsedMilliseconds());
+            // Šis apstādina taimeri
+            if (kkas() == 2) {
+                StopStopwatch();
+                UpdateControls();
+                //parent.$("#dialog-form").dialog("open");
+                parent.Swal.fire({
+                    title: 'Laiks! 5:00 minūtes',
+                    text: 'Malacis! Tagad ieraksti savu vārdu un iekrāso izlasīto tekstu.',
+                    type: 'success',
+                    confirmButtonText: 'Labi'
+                })
+                parent.resets();
+            }
+        }
+
+        function Step() {
+            if (!g_Running) return;
+
+            UpdateTimeDisplay();
+            // millis = 1000 / fps
+            // 84 = 12 fps
+            setTimeout(arguments.callee, 42);
+        }
+
+        window.addEventListener('load', (event) => {
+            console.log('page is fully loaded -timer');
+            //var parentWindow = window.parent;
+            //console.log(parentWindow);
+        });
+    </script>
+
+    <!-- Start/Stop/Reset stopwatch -->
+    <script language="javascript">
+        function GetTrackTimeString() {
+            var Time = MillisToTime(CalculateElapsedMilliseconds());
+
+            var Hours = Time.Hours;
+            var Minutes = Time.Minutes;
+            var Seconds = Time.Seconds;
+
+            function Round(pNumber) {
+                return Math.round(pNumber / 10) * 10;
+            }
+
+            //return Hours + ":" + Minutes + ":" + Round(Seconds);
+            return Time.TotalSeconds;
+        }
+
+        function StartStopwatch() {
+            _gaq.push(['_trackEvent', 'Embeded Stopwatch', 'Start', "" + GetTrackTimeString(), GetTrackTimeString()]);
+            g_StartTime = new Date().getTime();
+            g_Running = true;
+            SaveStateToCookie();
+            Step();
+        }
+        //aktivizējas pie pogām "apstāties lasīt" un "no jauna"
+        function StopStopwatch() {
+            _gaq.push(['_trackEvent', 'Embeded Stopwatch', 'Stop', "" + GetTrackTimeString(), GetTrackTimeString()]);
+            g_LeftOf = CalculateElapsedMilliseconds();
+            g_Running = false;
+            SaveStateToCookie();
+        }
+
+        //aktivizējas tikai tad ja nospiež pogu "No jauna"
+        function ResetStopwatch() {
+            _gaq.push(['_trackEvent', 'Embeded Stopwatch', 'Reset', "" + GetTrackTimeString(), GetTrackTimeString()]);
+            g_LeftOf = 0;
+            StopStopwatch(); // takes care of saving to cookie
+            UpdateTimeDisplay();
+        }
+    </script>
+
+    <script language="javascript">
+        function UpdateControls() {
+            if (g_Running) {
+                $('#Start').hide();
+                $('#Reset').hide();
+                $('#Stop').show();
+            } else {
+                var oStartButton = $('#Start');
+                $('#Stop').hide();
+
+                if (g_LeftOf == 0) {
+                    $('#Reset').hide();
+                    oStartButton.html("Sākt lasīt");
+                } else {
+                    $('#Reset').show();
+                    oStartButton.html("Turpināt lasīt");
+                }
+
+                oStartButton.show();
+            }
+        }
+    </script>
+
+    <!-- Entry Point -->
+    <script language="javascript">
+        $(function () {
+            LoadStateFromCookie();
+
+            if (g_Running) {
+                Step();
+            }
+
+            UpdateTimeDisplay();
+            // aktivizējas uz pogām "sākt lasīt" un "turpināt lasīt"
+            var fStart = function () {
+                StartStopwatch();
+                UpdateControls();
+                return false;
+            };
+
+            $('#Start')
+                .bind('touchstart', fStart)
+                .click(fStart);
+
+            var fStop = function () {
+                StopStopwatch();
+                UpdateControls();
+                UpdateTimeDisplay();
+                return false;
+            };
+
+            $('#Stop')
+                .bind('touchstart', fStop)
+                .click(fStop);
+
+            var fReset = function () {
+                ResetStopwatch();
+                UpdateControls();
+                return false;
+            };
+
+            $('#Reset')
+                .bind('touchstart', fReset)
+                .click(fReset);
+
+            UpdateControls();
+            _gaq.push(['_trackEvent', 'Embeded Stopwatch', 'Version', 'Version 1.3 (2012-07-24 10.51p)',
+                undefined, true
+            ]);
+        });
+    </script>
+    <style>
+        * {
+            font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        body {
+            background: white;
+        }
+    </style>
+    <style>
+        button {
+            background-color: #f5f5f5;
+            border: 1px solid #dedede;
+            border-top: 1px solid #eee;
+            border-left: 1px solid #eee;
+
+            line-height: 130%;
+            text-decoration: none;
+            font-weight: bold;
+            color: #565656;
+            cursor: pointer;
+
+            width: auto;
+            overflow: visible;
+            padding: 4px 10px 3px 7px;
+        }
+
+        button[type] {
+            padding: 5px 10px 5px 7px;
+            /* Firefox */
+            line-height: 17px;
+            /* Safari */
+        }
+
+        *:first-child+html button[type] {
+            padding: 4px 10px 3px 7px;
+            /* IE7 */
+        }
+
+        button.positive {
+            background-color: #E6EFC2;
+            border: 1px solid #C6D880;
+            color: #529214;
+        }
+
+        button.negative {
+            background: #fbe3e4;
+            border: 1px solid #fbc2c4;
+            color: #d12f19;
+        }
+
+        button.regular {
+            background-color: #dff4ff;
+            border: 1px solid #c2e1ef;
+            color: #336699;
+        }
+    </style>
+    <style type="text/css">
+        .Time {
+            color: #444444;
+        }
+
+        #Milliseconds {
+            font-size: 33%;
+            font-weight: normal;
+            color: #444444;
+        }
+
+        .TimeZero {
+            color: #cccccc;
+        }
+
+        .Seperator {
+            color: #cccccc;
+        }
+
+        button {
+            font-size: 33%;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-left: 10px;
+        }
+
+        h1 {
+            font-size: 9pt;
+            /* TODO: Use relative font size??? */
+            font-weight: normal;
+            background: #444444;
+            color: #aaa;
+            display: block;
+            padding: 5px;
+            font-style: italic;
+        }
+
+        h1 a {
+            font-style: normal;
+            font-size: 12pt;
+            /* TODO: Use relative font size??? */
+            text-decoration: none;
+            color: #cccccc;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <!-- <script type="text/javascript">
+        preventScrolling = function (event) {
+            // Prevent scrolling on this element
+            event.preventDefault();
+        }
+    </script> -->
+
+</head>
+
+<body style="margin:0;">
+    <center>
+        <div style="width:100%;height:100%;" ontouchmove="preventScrolling(event);">
+            <table border="0" cellpadding="0" cellspacing="0" style="font-weight:bold;">
+                <tr>
+                    <td colspan="6" align="center">
+                        <button id="Reset" class="negative" style="margin-bottom:10px;">No Jauna</button>
+                        <button id="Start" class="positive">Sākt lasīt!</button>
+                        <button id="Stop">Apstāties lasīt</button></td>
+                </tr>
+                <tr>
+                    <!-- <td><div class="Time" id="Hours"></div></td> -->
+                    <!-- <td><div class="Time Seperator">:</div></td> -->
+                    <td>
+                        <div class="Time" id="Minutes"></div>
+                    </td>
+                    <td>
+                        <div class="Time Seperator">:</div>
+                    </td>
+                    <td>
+                        <div class="Time" id="Seconds"></div>
+                    </td>
+                    <!-- <td><div class="Time" id="Milliseconds"></div></td> -->
+                </tr>
+
+            </table>
+        </div>
+    </center>
+
+
+</body>
+
+</html>

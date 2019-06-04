@@ -1,0 +1,145 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://raw.githubusercontent.com/daneden/animate.css/master/animate.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <!-- <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+</head>
+
+<body>
+    <script>
+        var vm;
+        window.onload = function () {
+            var pele = document.getElementById("txtt");
+            pele.addEventListener("mouseup", function () {
+                var txt = "";
+                if (window.getSelection) { // all browsers, except IE before version 9
+                    txt = window.getSelection().toString();
+                } else {
+                    if (document.selection.type == 'None') {
+                    } else {
+                        txt = document.selection.createRange().text;
+                    }
+                }
+                var v = txt.split(" ");
+                vm = Math.round(v.length / 5); // vārdi minūtē
+                document.getElementById("varduSkaits").innerHTML = vm;
+            });
+        };
+
+
+    window.addEventListener('load', (event) => {
+        //Sweet Alerts 2
+        // 1. Pamācība pimajā reizē
+        if (-1 === document.cookie.indexOf('returning=true')) {
+                // run only if cookie not found (-1 means not found)
+                Swal.fire({
+                    position: 'center-end',
+                    title: 'Pirms sāc lasīt, nospied pogu, lai uzņemtu laiku!',
+                    html:'<p>Ieraksti lodziņā savu vārdu un, kad būsi beidzis lasīt, iekrāso izlasīto tekstu. \n Neskaidrību gadījumā, skaties atgādnē!</p>',
+                    confirmButtonText: 'Labi',
+                    allowEnterKey: true
+                })
+                document.cookie = 'returning=true'; // set cookie
+        }
+
+        $("#create-user").on("click", function () {
+                Swal.fire({
+                    position: 'center-end',
+                    animation: false,
+                    customClass: 'animated tada',
+                    title: 'Pirms sāc lasīt, nospied pogu, lai uzņemtu laiku!',
+                    confirmButtonText: 'Labi',
+                    allowEnterKey: true,
+                    html:'<p>Ieraksti lodziņā savu vārdu un, kad būsi beidzis lasīt, iekrāso izlasīto tekstu. \n Neskaidrību gadījumā, skaties atgādnē!</p>',
+                })
+        });
+        window.resets = function () {
+            document.getElementById("varduSkaits").innerHTML = "Iekrāso izlasīto";
+            name = undefined;
+            document.getElementById('vards').value = '';
+        }
+        var name;
+        let counter = 0;
+        window.done = function () {
+            name = $("#vards").val();
+            if (name === "" && vm === undefined) return Swal.fire({
+                    title: 'Ieraksti savu vārdu \n Iekrāso izlasīto tekstu',
+                    text: 'Neskaidrību gadījumā, skaties atgādnē!',
+                    confirmButtonText: 'Labi',
+                    allowEnterKey: true 
+                })
+            else if (name === "") return Swal.fire({
+                    title: 'Ieraksti savu vārdu!',
+                    text: 'Skaties lapas labajā pusē! Ieraksti vārdu un iekrāso tekstu, tad spied pogu ✔',
+                    confirmButtonText: 'Labi',
+                    allowEnterKey: true 
+                })
+            else if (vm === undefined) return Swal.fire({
+                    title: 'Iekrāso tekstu!',
+                    text: 'Iekrāso tekstu, ko esi izlasījis. \n Lapas labajā pusē būs iespējams redzēt savu lasīšanas ātrumu - vārdi minūtē.',
+                    confirmButtonText: 'Labi',
+                    allowEnterKey: true 
+                })
+            counter++;
+            $('#rezultats').append('<div id="div_' + counter + '"><div class="positive"> Lasītājs' +
+                name + '</div><br>Vārdi minūtē: ' + vm + '</div>'
+            );
+
+            // Adding element to <div>
+            $("#div_" + counter).append(
+                "<span id='remove_" + counter + "' class='remove'>X</span>");
+        }
+        // Remove Item
+        // https://makitweb.com/dynamically-add-and-remove-element-with-jquery/
+        // Remove element
+        $('#rezultats').on('click', '.remove', function () {
+
+            var id = this.id;
+            var split_id = id.split("_");
+            var deleteindex = split_id[1];
+
+            // Remove <div> with id
+            $("#div_" + deleteindex).remove();
+
+        });
+            console.log('page is fully loaded -widget');    
+    });
+    </script>
+    <h5>
+        Uzņem laiku!
+    </h5>
+    <iframe id="taimeris" src="timer_new.html" width="auto" height="250px" frameborder="0" scrolling="yes">Ielāde...</iframe>
+    <div id="txtt">
+        <p>"My text is long and wise and it consumes a lot of interwebs."</p>
+    </div>
+    <div>
+        <input type="text" id="vards" name="tavs-vards" value="" size="60" class="wpcf7-form-control wpcf7-text wpcf7-validates-as-required"
+            aria-required="true" aria-invalid="false" placeholder="Tavs vārds" style="font-size: 21px;">
+    </div>
+    <div style="display: flex;
+        font-family: Montserrat, sans-serif;
+        color: #9fa1a8;
+        padding: 0px 16px;">
+        <div>
+            Vārdi minūtē:
+        </div>
+        <div id="varduSkaits" style="margin-left: 30px;">Iekrāso izlasīto</div>
+    </div>
+
+    <button class="vc_general vc_btn3 vc_btn3-size-md vc_btn3-shape-round vc_btn3-style-outline vc_btn3-o-empty vc_btn3-icon-left vc_btn3-color-green"
+        onclick="done();"><i class="vc_btn3-icon fa fa-check"></i></button>
+    <button class="vc_general vc_btn3 vc_btn3-size-md vc_btn3-shape-round vc_btn3-style-outline vc_btn3-o-empty vc_btn3-icon-left vc_btn3-color-danger"
+        onclick="resets();"><i class="vc_btn3-icon fa fa-times"></i></button>
+
+    <button id="create-user">Alert!</button>
+    
+    <br>
+    <div id="rezultats"></div>
+</body>
+<footer>
+
+</footer>
+
+</html>
