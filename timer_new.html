@@ -246,7 +246,6 @@
         var g_LeftOf = 0; // these values are store and loaded from the cookie
         var g_StartTime;
         var g_Running = false;
-        var dialog;
 
         function CalculateElapsedMilliseconds() { // this is the time that gets displayed
             if (!g_Running) return g_LeftOf;
@@ -257,7 +256,6 @@
         }
 
         //Pārveido sekundēs
-        // function kkas() {
         window.kkas = function () {
             let sekundes = CalculateElapsedMilliseconds() / 1000;
             return Math.floor(sekundes);
@@ -266,10 +264,9 @@
         function UpdateTimeDisplay() {
             DisplayTime(CalculateElapsedMilliseconds());
             // Šis apstādina taimeri
-            if (kkas() == 2) {
+            if (kkas() == 300) {
                 StopStopwatch();
                 UpdateControls();
-                //parent.$("#dialog-form").dialog("open");
                 parent.Swal.fire({
                     title: 'Laiks! 5:00 minūtes',
                     text: 'Malacis! Tagad ieraksti savu vārdu un iekrāso izlasīto tekstu.',
@@ -284,15 +281,11 @@
             if (!g_Running) return;
 
             UpdateTimeDisplay();
-            // millis = 1000 / fps
-            // 84 = 12 fps
             setTimeout(arguments.callee, 42);
         }
 
         window.addEventListener('load', (event) => {
-            console.log('page is fully loaded -timer');
-            //var parentWindow = window.parent;
-            //console.log(parentWindow);
+            //console.log('page is fully loaded -timer');
         });
     </script>
 
@@ -521,12 +514,12 @@
             margin-right: auto;
         }
     </style>
-    <!-- <script type="text/javascript">
+    <script type="text/javascript">
         preventScrolling = function (event) {
             // Prevent scrolling on this element
             event.preventDefault();
         }
-    </script> -->
+    </script>
 
 </head>
 
@@ -541,8 +534,6 @@
                         <button id="Stop">Apstāties lasīt</button></td>
                 </tr>
                 <tr>
-                    <!-- <td><div class="Time" id="Hours"></div></td> -->
-                    <!-- <td><div class="Time Seperator">:</div></td> -->
                     <td>
                         <div class="Time" id="Minutes"></div>
                     </td>
@@ -552,7 +543,6 @@
                     <td>
                         <div class="Time" id="Seconds"></div>
                     </td>
-                    <!-- <td><div class="Time" id="Milliseconds"></div></td> -->
                 </tr>
 
             </table>
